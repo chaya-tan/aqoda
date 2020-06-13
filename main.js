@@ -16,6 +16,7 @@ class Room {
       name: undefined,
       age: undefined,
     };
+    this.keycardNo = undefined;
   }
 
   get roomNumber() {
@@ -28,8 +29,9 @@ class Room {
   }
 
   checkIn(guestDetail) {
-    const { guestName, guestAge } = guestDetail;
+    const { guestName, guestAge, keycardNo } = guestDetail;
     this.guest = { name: guestName, age: guestAge };
+    this.keycardNo = keycardNo;
   }
 
   checkOut() {
@@ -37,6 +39,7 @@ class Room {
       name: undefined,
       age: undefined,
     };
+    this.keycardNo = undefined;
   }
 
   isAvailable() {
@@ -115,11 +118,11 @@ function main() {
       //to do: checkout(keycardNo, guestName)
       case "checkout":
         let [checkOutkeycardNo, checkOutguestName] = command.params;
-        checkOut(checkOutkeycardNo, checkOutguestName);
+        checkOutWithKeycardNo(checkOutkeycardNo, checkOutguestName);
         return;
       //to do: list_guest()
       case "list_guest":
-        listGuests();
+        listGuestNames();
         return;
       //to do: get_guest_in_room(roomNo)
       case "get_guest_in_room":
@@ -132,19 +135,73 @@ function main() {
         return;
       //to do: list_guest_by_age(sign, age)
       case "list_guest_by_age":
-        return;
+        let [listGuestSign, listGuestAge] = command.params;
+        const allGuests = getGuests();
+        let filteredGuests, filteredGuestNames;
+        switch (listGuestSign) {
+          case "<":
+            filteredGuests = allGuests.filter(
+              (guest) => guest.age < listGuestAge
+            );
+            filteredGuestNames = filteredGuests.map((guest) => guest.name);
+            console.log(filteredGuestNames.join(", "));
+            return;
+          case ">":
+            filteredGuests = allGuests.filter(
+              (guest) => guest.age > listGuestAge
+            );
+            filteredGuestNames = filteredGuests.map((guest) => guest.name);
+            console.log(filteredGuestNames.join(", "));
+            return;
+          default:
+            console.log("please specify < or > to filter guests by age");
+            return;
+        }
       //to do: list_guest_by_floor(floor)
+      case "list_guest_by_floor":
+        const [floorToListGuest] = command.params;
+        const roomsInTheFloor = hotelInstance.rooms[floorToListGuest - 1];
+        let guests = [];
+
+        roomsInTheFloor.map((roomInTheFloor) => {
+          if (
+            roomInTheFloor.guest.name &&
+            !guests.includes(roomInTheFloor.guest.name)
+          ) {
+            guests.push(roomInTheFloor.guest.name);
+          }
+        });
+        console.log(guests.join(", "));
+
+        return;
       //to do: checkout_guest_by_floor(floor)
+      case "checkout_guest_by_floor":
+        const [floorToCheckout] = command.params;
+        const roomsInTheFloorToCheckout =
+          hotelInstance.rooms[floorToCheckout - 1];
+        let roomsCheckedOut = [];
+
+        roomsInTheFloorToCheckout.map((room) => {
+          if (room.guest.name) {
+            checkOut(room.floor, room.nthRoomNoInFloor, room.keycardNo);
+            roomsCheckedOut.push(room.roomNumber);
+          }
+        });
+        console.log(`Room ${roomsCheckedOut.join(", ")} are checkout.`);
+        return;
       //to do: book_by_floor(floor, guestName, guestAge)
+      case "book_by_floor":
+        return;
       default:
         return;
     }
   });
 }
 
-function listGuests() {
+function listGuestNames() {
   const guests = getGuests();
-  console.log(guests.join(", "));
+  const guestNames = guests.map((guest) => guest.name);
+  console.log(guestNames.join(", "));
 }
 
 function getGuests() {
@@ -152,7 +209,7 @@ function getGuests() {
   hotelInstance.rooms.map((floor) => {
     floor.map((room) => {
       if (room.guest.name && !guests.includes(room.guest.name)) {
-        guests.push(room.guest.name);
+        guests.push({ name: room.guest.name, age: room.guest.age });
       }
     });
   });
@@ -180,19 +237,19 @@ function book(roomNo, guestName, guestAge) {
       `Cannot book room ${roomNo} for ${guestName}, The room is currently booked by ${theRoomToBook.guest.name}.`
     );
   } else {
+    const keycardNo = hotelInstance.getKeyCardNoAndBookKeycardForRoom(roomNo);
     hotelInstance.rooms[floorNo - 1][roomNth - 1].checkIn({
       guestName,
       guestAge,
+      keycardNo,
     });
-
-    const keycardNo = hotelInstance.getKeyCardNoAndBookKeycardForRoom(roomNo);
     console.log(
       `Room ${roomNo} is booked by ${guestName} with keycard number ${keycardNo}.`
     );
   }
 }
 
-function checkOut(keycardNo, guestName) {
+function checkOutWithKeycardNo(keycardNo, guestName) {
   let roomNoBookedWithTheKeycard = hotelInstance.keycards[keycardNo - 1].roomNo;
   roomNoBookedWithTheKeycard += "";
   const floorBooked = parseInt(roomNoBookedWithTheKeycard.substring(0, 1));
@@ -202,14 +259,20 @@ function checkOut(keycardNo, guestName) {
     hotelInstance.rooms[floorBooked - 1][nthRoomBooked - 1].guest.name;
 
   if (bookedName === guestName) {
-    hotelInstance.rooms[floorBooked - 1][nthRoomBooked - 1].checkOut();
-    hotelInstance.keycards[keycardNo - 1].roomNo = undefined;
+    checkOut(floorBooked, nthRoomBooked, keycardNo);
+    // hotelInstance.rooms[floorBooked - 1][nthRoomBooked - 1].checkOut();
+    // hotelInstance.keycards[keycardNo - 1].roomNo = undefined;
     console.log(`Room ${roomNoBookedWithTheKeycard} is checkout.`);
   } else {
     console.log(
       `Only ${bookedName} can checkout with keycard number ${keycardNo}.`
     );
   }
+}
+
+function checkOut(floor, nthRoom, keycardNo) {
+  hotelInstance.rooms[floor - 1][nthRoom - 1].checkOut();
+  hotelInstance.keycards[keycardNo - 1].roomNo = undefined;
 }
 
 function getCommandsFromFileName(fileName) {
