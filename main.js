@@ -23,12 +23,13 @@ class Room {
     return this.floor + roomNoLeadingWithZero.slice(-2);
   }
 
-  set GuestDetail(guestDetail) {
-    const [name, age] = guestDetail;
-    this.guest = { name, age };
-  }
   get GuestDetail() {
     return this.guest;
+  }
+
+  checkIn(guestDetail) {
+    const { guestName, guestAge } = guestDetail;
+    this.guest = { name: guestName, age: guestAge };
   }
 
   checkOut() {
@@ -48,6 +49,7 @@ class Hotel {
     this.totalFloor = totalFloor;
     this.totalRoomPerFloor = totalRoomPerFloor;
     this.rooms = [];
+    this.keycards = [];
     this.init = function () {
       for (let floor = 1; floor <= totalFloor; floor++) {
         this.rooms.push([]);
@@ -55,16 +57,29 @@ class Hotel {
           this.rooms[floor - 1][room - 1] = new Room(floor, room);
         }
       }
-      console.log("rooms", this.rooms);
+
+      const totalRooms = this.totalFloor * this.totalRoomPerFloor;
+      for (let keycardNo = 1; keycardNo <= totalRooms; keycardNo++) {
+        this.keycards.push({ keycardNo, isUsed: false });
+      }
     };
     this.init();
+  }
+
+  get availableKeycardNo() {
+    for (let keycard of this.keycards) {
+      if (!keycard.isUsed) {
+        keycard.isUsed = true;
+        return keycard.keycardNo;
+      }
+    }
   }
 }
 
 function main() {
   const filename = "input.txt";
   const commands = getCommandsFromFileName(filename);
-  let hotelObject;
+  let hotelInstance;
 
   commands.forEach((command) => {
     console.log("command", command);
@@ -72,8 +87,8 @@ function main() {
       case "create_hotel":
         // to do: validate floor, roomPerFloor
         const [floor, roomPerFloor] = command.params;
-        const hotel = { floor, roomPerFloor };
-        hotelObject = new Hotel(floor, roomPerFloor);
+        // const hotel = { floor, roomPerFloor };
+        hotelInstance = new Hotel(floor, roomPerFloor);
 
         console.log(
           `Hotel created with ${floor} floor(s), ${roomPerFloor} room(s) per floor.`
@@ -81,6 +96,32 @@ function main() {
 
         return;
       //to do: book(roomNo, guestName, guestAge)
+      case "book":
+        // to do: validate
+        let [roomNo, guestName, guestAge] = command.params;
+        roomNo += "";
+        const floorNo = parseInt(roomNo.substring(0, 1));
+        const roomNth = parseInt(roomNo.substring(1));
+
+        const theRoomToBook = hotelInstance.rooms[floorNo - 1][roomNth - 1];
+
+        if (theRoomToBook.guest.name) {
+          console.log(
+            `Cannot book room ${roomNo} for ${guestName}, The room is currently booked by ${theRoomToBook.guest.name}.`
+          );
+        } else {
+          hotelInstance.rooms[floorNo - 1][roomNth - 1].checkIn({
+            guestName,
+            guestAge,
+          });
+          const keycardNo = hotelInstance.availableKeycardNo;
+          console.log(
+            `Room ${roomNo} is booked by ${guestName} with keycard number ${keycardNo}.`
+          );
+        }
+
+        // console.log(hotelInstance.rooms[floorNo - 1][roomNth - 1]);
+        return;
       //to do: list_available_rooms()
       //to do: checkout()
       //to do: list_guest()
