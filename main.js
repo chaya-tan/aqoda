@@ -119,15 +119,7 @@ function main() {
         return;
       //to do: list_guest()
       case "list_guest":
-        let guests = [];
-        hotelInstance.rooms.map((floor) => {
-          floor.map((room) => {
-            if (room.guest.name && !guests.includes(room.guest.name)) {
-              guests.push(room.guest.name);
-            }
-          });
-        });
-        console.log(guests.join(", "));
+        listGuests();
         return;
       //to do: get_guest_in_room(roomNo)
       case "get_guest_in_room":
@@ -137,7 +129,10 @@ function main() {
             getRoomNthFromRoomNo(guestRoomNo) - 1
           ].guest.name
         );
+        return;
       //to do: list_guest_by_age(sign, age)
+      case "list_guest_by_age":
+        return;
       //to do: list_guest_by_floor(floor)
       //to do: checkout_guest_by_floor(floor)
       //to do: book_by_floor(floor, guestName, guestAge)
@@ -145,6 +140,23 @@ function main() {
         return;
     }
   });
+}
+
+function listGuests() {
+  const guests = getGuests();
+  console.log(guests.join(", "));
+}
+
+function getGuests() {
+  let guests = [];
+  hotelInstance.rooms.map((floor) => {
+    floor.map((room) => {
+      if (room.guest.name && !guests.includes(room.guest.name)) {
+        guests.push(room.guest.name);
+      }
+    });
+  });
+  return guests;
 }
 
 function getFloorFromRoomNo(roomNo) {
