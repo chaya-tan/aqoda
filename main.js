@@ -101,7 +101,7 @@ function main() {
       case "book":
         // to do: validate
         let [bookRoomNo, bookGuestName, bookGuestAge] = command.params;
-        book(bookRoomNo, bookGuestName, bookGuestAge);
+        bookAndLog(bookRoomNo, bookGuestName, bookGuestAge);
         return;
 
       case "list_available_rooms":
@@ -238,7 +238,7 @@ function getRoomNthFromRoomNo(roomNo) {
   return parseInt(roomNo.substring(1));
 }
 
-function book(roomNo, guestName, guestAge) {
+function bookAndLog(roomNo, guestName, guestAge) {
   const floorNo = getFloorFromRoomNo(roomNo);
   const roomNth = getRoomNthFromRoomNo(roomNo);
 
@@ -249,16 +249,23 @@ function book(roomNo, guestName, guestAge) {
       `Cannot book room ${roomNo} for ${guestName}, The room is currently booked by ${theRoomToBook.guest.name}.`
     );
   } else {
-    const keycardNo = hotelInstance.getKeyCardNoAndBookKeycardForRoom(roomNo);
-    hotelInstance.rooms[floorNo - 1][roomNth - 1].checkIn({
-      guestName,
-      guestAge,
-      keycardNo,
-    });
+    const keycardNo = bookAndReturnKeycardNo(roomNo, guestName, guestAge);
     console.log(
       `Room ${roomNo} is booked by ${guestName} with keycard number ${keycardNo}.`
     );
   }
+}
+
+function bookAndReturnKeycardNo(roomNo, guestName, guestAge) {
+  const floorNo = getFloorFromRoomNo(roomNo);
+  const roomNth = getRoomNthFromRoomNo(roomNo);
+  const keycardNo = hotelInstance.getKeyCardNoAndBookKeycardForRoom(roomNo);
+  hotelInstance.rooms[floorNo - 1][roomNth - 1].checkIn({
+    guestName,
+    guestAge,
+    keycardNo,
+  });
+  return keycardNo;
 }
 
 function checkOutWithKeycardNo(keycardNo, guestName) {
