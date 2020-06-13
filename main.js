@@ -191,6 +191,18 @@ function main() {
         return;
       //to do: book_by_floor(floor, guestName, guestAge)
       case "book_by_floor":
+        const [floorToBook, guestNameToBook, guestAgeToBook] = command.params;
+        const allRoomsInTheFloor = hotelInstance.rooms[floorToBook - 1];
+        let isTheFloorEmpty = true;
+        allRoomsInTheFloor.map((room) => {
+          if (room.guest.name) isTheFloorEmpty = false;
+        });
+        if (isTheFloorEmpty) {
+        } else {
+          console.log(
+            `Cannot book floor ${floorToBook} for ${guestNameToBook}.`
+          );
+        }
         return;
       default:
         return;
