@@ -110,7 +110,7 @@ function main() {
             }
           });
         });
-        console.log(`Avaiable room(s) are ${availableRooms}`);
+        console.log(availableRooms.join(", "));
         return;
       //to do: checkout(keycardNo, guestName)
       case "checkout":
@@ -119,10 +119,24 @@ function main() {
         return;
       //to do: list_guest()
       case "list_guest":
-        // const
-
+        let guests = [];
+        hotelInstance.rooms.map((floor) => {
+          floor.map((room) => {
+            if (room.guest.name && !guests.includes(room.guest.name)) {
+              guests.push(room.guest.name);
+            }
+          });
+        });
+        console.log(guests.join(", "));
         return;
       //to do: get_guest_in_room(roomNo)
+      case "get_guest_in_room":
+        let [guestRoomNo] = command.params;
+        console.log(
+          hotelInstance.rooms[getFloorFromRoomNo(guestRoomNo) - 1][
+            getRoomNthFromRoomNo(guestRoomNo) - 1
+          ].guest.name
+        );
       //to do: list_guest_by_age(sign, age)
       //to do: list_guest_by_floor(floor)
       //to do: checkout_guest_by_floor(floor)
@@ -133,11 +147,19 @@ function main() {
   });
 }
 
-function book(roomNo, guestName, guestAge) {
-  // let [roomNo, guestName, guestAge] = command.params;
+function getFloorFromRoomNo(roomNo) {
   roomNo += "";
-  const floorNo = parseInt(roomNo.substring(0, 1));
-  const roomNth = parseInt(roomNo.substring(1));
+  return parseInt(roomNo.substring(0, 1));
+}
+
+function getRoomNthFromRoomNo(roomNo) {
+  roomNo += "";
+  return parseInt(roomNo.substring(1));
+}
+
+function book(roomNo, guestName, guestAge) {
+  const floorNo = getFloorFromRoomNo(roomNo);
+  const roomNth = getRoomNthFromRoomNo(roomNo);
 
   const theRoomToBook = hotelInstance.rooms[floorNo - 1][roomNth - 1];
 
