@@ -4,7 +4,7 @@ CLI Self Check-in & Check-out System
 
 ## To run
 
-type `node main.js` in terminal
+run `node main.js` in terminal
 
 ## To change commands
 
