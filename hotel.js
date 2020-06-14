@@ -125,8 +125,6 @@ class Hotel {
 
     if (bookedName === guestName) {
       this.checkOut(floorBooked, nthRoomBooked, keycardNo);
-      // hotelInstance.rooms[floorBooked - 1][nthRoomBooked - 1].checkOut();
-      // hotelInstance.keycards[keycardNo - 1].roomNo = undefined;
       console.log(`Room ${roomNoBookedWithTheKeycard} is checkout.`);
     } else {
       console.log(
@@ -170,7 +168,6 @@ class Room {
   get roomNumber() {
     const roomNoLeadingWithZero = "0" + this.nthRoomNoInFloor;
     return this.floor + roomNoLeadingWithZero.slice(-2);
-    // return getRoomNoFromFloorAndNth(this.floor, this.nthRoomNoInFloor);
   }
 
   get GuestDetail() {
