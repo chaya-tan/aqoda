@@ -80,6 +80,71 @@ class Hotel {
     }
   }
 
+  bookByFloor(floorToBook, guestNameToBook, guestAgeToBook) {
+    const allRoomsInTheFloor = this.rooms[floorToBook - 1];
+    let isTheFloorEmpty = true;
+    allRoomsInTheFloor.map((room) => {
+      if (room.guest.name) isTheFloorEmpty = false;
+    });
+    if (isTheFloorEmpty) {
+      let bookedRoomNumbers = [];
+      let bookedKeycardNumbers = [];
+      allRoomsInTheFloor.map((room) => {
+        const nthRoom = room.nthRoomNoInFloor;
+        const keycardNo = hotelInstance.bookAndReturnKeycardNo(
+          floorToBook,
+          nthRoom,
+          guestNameToBook,
+          guestAgeToBook
+        );
+
+        bookedRoomNumbers.push(getRoomNoFromFloorAndNth(floorToBook, nthRoom));
+        bookedKeycardNumbers.push(keycardNo);
+      });
+      console.log(
+        `Room ${bookedRoomNumbers.join(
+          ", "
+        )} are booked with keycard number ${bookedKeycardNumbers.join(", ")}`
+      );
+    } else {
+      console.log(`Cannot book floor ${floorToBook} for ${guestNameToBook}.`);
+    }
+  }
+
+  bookAndLog(roomNo, guestName, guestAge) {
+    const floorNo = getFloorFromRoomNo(roomNo);
+    const roomNth = getRoomNthFromRoomNo(roomNo);
+
+    const theRoomToBook = this.rooms[floorNo - 1][roomNth - 1];
+
+    if (theRoomToBook.guest.name) {
+      console.log(
+        `Cannot book room ${roomNo} for ${guestName}, The room is currently booked by ${theRoomToBook.guest.name}.`
+      );
+    } else {
+      const keycardNo = hotelInstance.bookAndReturnKeycardNo(
+        floorNo,
+        roomNth,
+        guestName,
+        guestAge
+      );
+      console.log(
+        `Room ${roomNo} is booked by ${guestName} with keycard number ${keycardNo}.`
+      );
+    }
+  }
+
+  bookAndReturnKeycardNo(floorNo, roomNth, guestName, guestAge) {
+    const roomNo = getRoomNoFromFloorAndNth(floorNo, roomNth);
+    const keycardNo = hotelInstance.getKeyCardNoAndBookKeycardForRoom(roomNo);
+    hotelInstance.rooms[floorNo - 1][roomNth - 1].checkIn({
+      guestName,
+      guestAge,
+      keycardNo,
+    });
+    return keycardNo;
+  }
+
   listGuestNames() {
     const guests = this.getGuests();
     const guestNames = guests.map((guest) => guest.name);
@@ -119,7 +184,7 @@ function main() {
       case "book":
         // to do: validate
         let [bookRoomNo, bookGuestName, bookGuestAge] = command.params;
-        bookAndLog(bookRoomNo, bookGuestName, bookGuestAge);
+        hotelInstance.bookAndLog(bookRoomNo, bookGuestName, bookGuestAge);
         return;
 
       case "list_available_rooms":
@@ -210,7 +275,7 @@ function main() {
       //to do: book_by_floor(floor, guestName, guestAge)
       case "book_by_floor":
         const [floorToBook, guestNameToBook, guestAgeToBook] = command.params;
-        book_by_floor(floorToBook, guestNameToBook, guestAgeToBook);
+        hotelInstance.bookByFloor(floorToBook, guestNameToBook, guestAgeToBook);
         return;
       default:
         return;
@@ -231,71 +296,6 @@ function getRoomNthFromRoomNo(roomNo) {
 function getRoomNoFromFloorAndNth(floor, nthroom) {
   const roomNoLeadingWithZero = "0" + nthroom;
   return floor + roomNoLeadingWithZero.slice(-2);
-}
-
-function book_by_floor(floorToBook, guestNameToBook, guestAgeToBook) {
-  const allRoomsInTheFloor = hotelInstance.rooms[floorToBook - 1];
-  let isTheFloorEmpty = true;
-  allRoomsInTheFloor.map((room) => {
-    if (room.guest.name) isTheFloorEmpty = false;
-  });
-  if (isTheFloorEmpty) {
-    let bookedRoomNumbers = [];
-    let bookedKeycardNumbers = [];
-    allRoomsInTheFloor.map((room) => {
-      const nthRoom = room.nthRoomNoInFloor;
-      const keycardNo = bookAndReturnKeycardNo(
-        floorToBook,
-        nthRoom,
-        guestNameToBook,
-        guestAgeToBook
-      );
-
-      bookedRoomNumbers.push(getRoomNoFromFloorAndNth(floorToBook, nthRoom));
-      bookedKeycardNumbers.push(keycardNo);
-    });
-    console.log(
-      `Room ${bookedRoomNumbers.join(
-        ", "
-      )} are booked with keycard number ${bookedKeycardNumbers.join(", ")}`
-    );
-  } else {
-    console.log(`Cannot book floor ${floorToBook} for ${guestNameToBook}.`);
-  }
-}
-
-function bookAndLog(roomNo, guestName, guestAge) {
-  const floorNo = getFloorFromRoomNo(roomNo);
-  const roomNth = getRoomNthFromRoomNo(roomNo);
-
-  const theRoomToBook = hotelInstance.rooms[floorNo - 1][roomNth - 1];
-
-  if (theRoomToBook.guest.name) {
-    console.log(
-      `Cannot book room ${roomNo} for ${guestName}, The room is currently booked by ${theRoomToBook.guest.name}.`
-    );
-  } else {
-    const keycardNo = bookAndReturnKeycardNo(
-      floorNo,
-      roomNth,
-      guestName,
-      guestAge
-    );
-    console.log(
-      `Room ${roomNo} is booked by ${guestName} with keycard number ${keycardNo}.`
-    );
-  }
-}
-
-function bookAndReturnKeycardNo(floorNo, roomNth, guestName, guestAge) {
-  const roomNo = getRoomNoFromFloorAndNth(floorNo, roomNth);
-  const keycardNo = hotelInstance.getKeyCardNoAndBookKeycardForRoom(roomNo);
-  hotelInstance.rooms[floorNo - 1][roomNth - 1].checkIn({
-    guestName,
-    guestAge,
-    keycardNo,
-  });
-  return keycardNo;
 }
 
 function checkOutWithKeycardNo(keycardNo, guestName) {
