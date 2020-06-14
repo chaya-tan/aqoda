@@ -162,6 +162,32 @@ class Hotel {
     });
     return guests;
   }
+
+  checkOutWithKeycardNo(keycardNo, guestName) {
+    let roomNoBookedWithTheKeycard = this.keycards[keycardNo - 1].roomNo;
+    roomNoBookedWithTheKeycard += "";
+    const floorBooked = parseInt(roomNoBookedWithTheKeycard.substring(0, 1));
+    const nthRoomBooked = parseInt(roomNoBookedWithTheKeycard.substring(1));
+
+    const bookedName =
+      hotelInstance.rooms[floorBooked - 1][nthRoomBooked - 1].guest.name;
+
+    if (bookedName === guestName) {
+      this.checkOut(floorBooked, nthRoomBooked, keycardNo);
+      // hotelInstance.rooms[floorBooked - 1][nthRoomBooked - 1].checkOut();
+      // hotelInstance.keycards[keycardNo - 1].roomNo = undefined;
+      console.log(`Room ${roomNoBookedWithTheKeycard} is checkout.`);
+    } else {
+      console.log(
+        `Only ${bookedName} can checkout with keycard number ${keycardNo}.`
+      );
+    }
+  }
+
+  checkOut(floor, nthRoom, keycardNo) {
+    this.rooms[floor - 1][nthRoom - 1].checkOut();
+    this.keycards[keycardNo - 1].roomNo = undefined;
+  }
 }
 
 function main() {
@@ -201,7 +227,10 @@ function main() {
       //to do: checkout(keycardNo, guestName)
       case "checkout":
         let [checkOutkeycardNo, checkOutguestName] = command.params;
-        checkOutWithKeycardNo(checkOutkeycardNo, checkOutguestName);
+        hotelInstance.checkOutWithKeycardNo(
+          checkOutkeycardNo,
+          checkOutguestName
+        );
         return;
       //to do: list_guest()
       case "list_guest":
@@ -266,7 +295,11 @@ function main() {
 
         roomsInTheFloorToCheckout.map((room) => {
           if (room.guest.name) {
-            checkOut(room.floor, room.nthRoomNoInFloor, room.keycardNo);
+            hotelInstance.checkOut(
+              room.floor,
+              room.nthRoomNoInFloor,
+              room.keycardNo
+            );
             roomsCheckedOut.push(room.roomNumber);
           }
         });
@@ -296,32 +329,6 @@ function getRoomNthFromRoomNo(roomNo) {
 function getRoomNoFromFloorAndNth(floor, nthroom) {
   const roomNoLeadingWithZero = "0" + nthroom;
   return floor + roomNoLeadingWithZero.slice(-2);
-}
-
-function checkOutWithKeycardNo(keycardNo, guestName) {
-  let roomNoBookedWithTheKeycard = hotelInstance.keycards[keycardNo - 1].roomNo;
-  roomNoBookedWithTheKeycard += "";
-  const floorBooked = parseInt(roomNoBookedWithTheKeycard.substring(0, 1));
-  const nthRoomBooked = parseInt(roomNoBookedWithTheKeycard.substring(1));
-
-  const bookedName =
-    hotelInstance.rooms[floorBooked - 1][nthRoomBooked - 1].guest.name;
-
-  if (bookedName === guestName) {
-    checkOut(floorBooked, nthRoomBooked, keycardNo);
-    // hotelInstance.rooms[floorBooked - 1][nthRoomBooked - 1].checkOut();
-    // hotelInstance.keycards[keycardNo - 1].roomNo = undefined;
-    console.log(`Room ${roomNoBookedWithTheKeycard} is checkout.`);
-  } else {
-    console.log(
-      `Only ${bookedName} can checkout with keycard number ${keycardNo}.`
-    );
-  }
-}
-
-function checkOut(floor, nthRoom, keycardNo) {
-  hotelInstance.rooms[floor - 1][nthRoom - 1].checkOut();
-  hotelInstance.keycards[keycardNo - 1].roomNo = undefined;
 }
 
 function getCommandsFromFileName(fileName) {
