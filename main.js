@@ -79,6 +79,24 @@ class Hotel {
       }
     }
   }
+
+  listGuestNames() {
+    const guests = this.getGuests();
+    const guestNames = guests.map((guest) => guest.name);
+    console.log(guestNames.join(", "));
+  }
+
+  getGuests() {
+    let guests = [];
+    this.rooms.map((floor) => {
+      floor.map((room) => {
+        if (room.guest.name && !guests.includes(room.guest.name)) {
+          guests.push({ name: room.guest.name, age: room.guest.age });
+        }
+      });
+    });
+    return guests;
+  }
 }
 
 function main() {
@@ -122,7 +140,7 @@ function main() {
         return;
       //to do: list_guest()
       case "list_guest":
-        listGuestNames();
+        hotelInstance.listGuestNames();
         return;
       //to do: get_guest_in_room(roomNo)
       case "get_guest_in_room":
@@ -136,7 +154,7 @@ function main() {
       //to do: list_guest_by_age(sign, age)
       case "list_guest_by_age":
         let [listGuestSign, listGuestAge] = command.params;
-        const allGuests = getGuests();
+        const allGuests = hotelInstance.getGuests();
         let filteredGuests, filteredGuestNames;
         switch (listGuestSign) {
           case "<":
@@ -198,24 +216,6 @@ function main() {
         return;
     }
   });
-}
-
-function listGuestNames() {
-  const guests = getGuests();
-  const guestNames = guests.map((guest) => guest.name);
-  console.log(guestNames.join(", "));
-}
-
-function getGuests() {
-  let guests = [];
-  hotelInstance.rooms.map((floor) => {
-    floor.map((room) => {
-      if (room.guest.name && !guests.includes(room.guest.name)) {
-        guests.push({ name: room.guest.name, age: room.guest.age });
-      }
-    });
-  });
-  return guests;
 }
 
 function getFloorFromRoomNo(roomNo) {
