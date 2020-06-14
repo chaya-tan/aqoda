@@ -1,6 +1,6 @@
 const fs = require("fs");
 const { isRegExp } = require("util");
-const { Hotel, Room } = require("./hotel.js");
+const { Hotel } = require("./hotel.js");
 
 let hotelInstance;
 
@@ -18,16 +18,20 @@ function main() {
   commands.forEach((command) => {
     switch (command.name) {
       case "create_hotel":
-        // to do: validate floor, roomPerFloor
         const [floor, roomPerFloor] = command.params;
-        hotelInstance = new Hotel(floor, roomPerFloor);
-        console.log(
-          `Hotel created with ${floor} floor(s), ${roomPerFloor} room(s) per floor.`
-        );
+        if (floor > 9 || roomPerFloor > 99) {
+          console.log(
+            `Hotel floor is limited to 9 floors and rooms per floor is limited to 99. Please try again.`
+          );
+        } else {
+          hotelInstance = new Hotel(floor, roomPerFloor);
+          console.log(
+            `Hotel created with ${floor} floor(s), ${roomPerFloor} room(s) per floor.`
+          );
+        }
 
         return;
       case "book":
-        // to do: validate
         let [bookRoomNo, bookGuestName, bookGuestAge] = command.params;
         hotelInstance.bookAndLog(bookRoomNo, bookGuestName, bookGuestAge);
         return;
